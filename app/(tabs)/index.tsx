@@ -1,107 +1,164 @@
-import { Image } from "expo-image";
-import { Platform, StyleSheet } from "react-native";
-
-import { HelloWave } from "@/components/hello-wave";
-import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Link } from "expo-router";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { useTodoStore } from "@/store/store";
+import { FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+interface Todo {
+  id: number;
+  title: string;
+  details: string;
+}
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
-    >
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Wiiling to do...</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit{" "}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText>{" "}
-          to see changes. Press{" "}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: "cmd + d",
-              android: "cmd + m",
-              web: "F12",
-            })}
-          </ThemedText>{" "}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction
-              title="Action"
-              icon="cube"
-              onPress={() => alert("Action pressed")}
-            />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert("Share pressed")}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert("Delete pressed")}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const todos = useTodoStore((state) => state.todos);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">
-            npm run reset-project
-          </ThemedText>{" "}
-          to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
-          directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+        <ThemedView style={styles.titleContainer}>
+          <ThemedText type="title">willing to do...</ThemedText>
+        </ThemedView>
+
+        {/* Task Counter */}
+        <ThemedView style={styles.counterContainer}>
+          <ThemedText type="defaultSemiBold" style={styles.counterText}>
+            {todos.length} {todos.length === 1 ? "task" : "tasks"} today
+          </ThemedText>
+        </ThemedView>
+
+        {/* Empty State */}
+        {todos.length === 0 ? (
+          <ThemedView style={styles.emptyContainer}>
+            <IconSymbol name="face.dissatisfied" size={65} color="gray" />
+            <ThemedText type="subtitle" style={styles.emptyTitle}>
+              No tasks yet
+            </ThemedText>
+            <ThemedText style={styles.emptyText}>
+              Tap "Add To Do" to create your first task and start being
+              productive!
+            </ThemedText>
+          </ThemedView>
+        ) : (
+          /* To-Do List */
+          <ThemedView style={styles.listContainer}>
+            <FlatList
+              data={todos}
+              keyExtractor={(_, index) => index.toString()}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item, index }) => (
+                <ThemedView
+                  style={[styles.todoCard, { marginTop: index === 0 ? 0 : 16 }]}
+                >
+                  <View style={styles.todoHeader}>
+                    <View style={styles.checkbox} />
+                    <ThemedText
+                      type="defaultSemiBold"
+                      style={styles.todoTitle}
+                      numberOfLines={2}
+                    >
+                      {item.title}
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={styles.todoDetails} numberOfLines={3}>
+                    {item.details}
+                  </ThemedText>
+                </ThemedView>
+              )}
+            />
+          </ThemedView>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+  },
+  container: {
+    flex: 1,
+  },
+  content: {
+    padding: 20,
+  },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    marginBottom: 16,
+    marginTop: 20,
   },
-  stepContainer: {
-    gap: 8,
+  counterContainer: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "rgba(161, 206, 220, 0.2)",
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  counterText: {
+    fontSize: 16,
+    textAlign: "center",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  emptyIcon: {
+    fontSize: 72,
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+  emptyTitle: {
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  emptyText: {
+    textAlign: "center",
+    opacity: 0.7,
+    lineHeight: 22,
+  },
+  listContainer: {
+    gap: 16,
+  },
+  todoCard: {
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: "rgba(161, 206, 220, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(161, 206, 220, 0.3)",
+    gap: 12,
+  },
+  todoHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: "#A1CEDC",
+    marginTop: 2,
+  },
+  todoTitle: {
+    flex: 1,
+    fontSize: 18,
+    lineHeight: 26,
+  },
+  todoDetails: {
+    fontSize: 15,
+    lineHeight: 22,
+    opacity: 0.8,
+    marginLeft: 36,
   },
 });
