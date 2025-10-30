@@ -1,18 +1,19 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { TodoCard } from "@/components/todo-card";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useTodoStore } from "@/store/store";
-import { FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-interface Todo {
-  id: number;
-  title: string;
-  details: string;
-}
 
 export default function HomeScreen() {
   const todos = useTodoStore((state) => state.todos);
+
+  const deepTasks = todos.filter((t) => t.category === "deep");
+  const easyTasks = todos.filter((t) => t.category === "easy");
+
+  const MAX_DEEP = 3;
+  const MAX_EASY = 7;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -25,11 +26,13 @@ export default function HomeScreen() {
         </ThemedView>
 
         {/* Task Counter */}
-        <ThemedView style={styles.counterContainer}>
-          <ThemedText type="defaultSemiBold" style={styles.counterText}>
-            {todos.length} {todos.length === 1 ? "task" : "tasks"} today
-          </ThemedText>
-        </ThemedView>
+        {todos.length > 0 && (
+          <ThemedView style={styles.counterContainer}>
+            <ThemedText type="defaultSemiBold" style={styles.counterText}>
+              only {todos.length} {todos.length === 1 ? "task" : "tasks"} today
+            </ThemedText>
+          </ThemedView>
+        )}
 
         {/* Empty State */}
         {todos.length === 0 ? (
@@ -46,31 +49,32 @@ export default function HomeScreen() {
         ) : (
           /* To-Do List */
           <ThemedView style={styles.listContainer}>
-            <FlatList
-              data={todos}
-              keyExtractor={(_, index) => index.toString()}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item, index }) => (
-                <ThemedView
-                  style={[styles.todoCard, { marginTop: index === 0 ? 0 : 16 }]}
+            {/* Deep Tasks */}
+            {deepTasks.length > 0 && (
+              <>
+                <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
+                  Deep Tasks ({deepTasks.length}/{MAX_DEEP})
+                </ThemedText>
+                {deepTasks.map((item, index) => (
+                  <TodoCard key={index} todo={item} index={index} />
+                ))}
+              </>
+            )}
+
+            {/* Easy Tasks */}
+            {easyTasks.length > 0 && (
+              <>
+                <ThemedText
+                  type="subtitle"
+                  style={{ marginBottom: 8, marginTop: 20 }}
                 >
-                  <View style={styles.todoHeader}>
-                    <View style={styles.checkbox} />
-                    <ThemedText
-                      type="defaultSemiBold"
-                      style={styles.todoTitle}
-                      numberOfLines={2}
-                    >
-                      {item.title}
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={styles.todoDetails} numberOfLines={3}>
-                    {item.details}
-                  </ThemedText>
-                </ThemedView>
-              )}
-            />
+                  Easy Tasks ({easyTasks.length}/{MAX_EASY})
+                </ThemedText>
+                {easyTasks.map((item, index) => (
+                  <TodoCard key={index} todo={item} index={index} />
+                ))}
+              </>
+            )}
           </ThemedView>
         )}
       </ScrollView>

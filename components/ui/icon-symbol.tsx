@@ -25,6 +25,8 @@ const MAPPING = {
   gearshape: "settings",
   plus: "add",
   "face.dissatisfied": "sentiment-dissatisfied",
+  brain: "psychology",
+  bolt: "bolt",
 } as const;
 
 type IconSymbolName = keyof typeof MAPPING;
