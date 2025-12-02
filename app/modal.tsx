@@ -8,6 +8,7 @@ import { useTodoStore } from "@/store/store";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Keyboard,
   Pressable,
   StyleSheet,
   Text,
@@ -20,6 +21,7 @@ export default function ModalScreen() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
+  const [category, setCategory] = useState<"deep" | "easy" | null>(null);
   const addTodo = useTodoStore((state) => state.addTodo);
   const { width } = useWindowDimensions();
   const colorScheme = useColorScheme();
@@ -28,13 +30,13 @@ export default function ModalScreen() {
   const todos = useTodoStore((state) => state.todos);
 
   const maxTasks = { deep: 3, easy: 7 };
+  const deepTasks = todos.filter((t) => t.category === "deep");
+  const easyTasks = todos.filter((t) => t.category === "easy");
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  const isDeepFull =
-    todos.filter((t) => t.category === "deep").length >= maxTasks.deep;
-  const isEasyFull =
-    todos.filter((t) => t.category === "easy").length >= maxTasks.easy;
+  const isDeepFull = deepTasks.length >= maxTasks.deep;
+  const isEasyFull = easyTasks.length >= maxTasks.easy;
 
   const handleAdd = (category: "deep" | "easy") => {
     const isFull = category === "deep" ? isDeepFull : isEasyFull;
@@ -54,78 +56,145 @@ export default function ModalScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="subtitle">Create New To-Do</ThemedText>
-
-      <TextInput
-        style={[styles.input, { width: width * 0.8, height: 50 }]}
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-      />
-
-      <TextInput
-        style={[styles.input, { width: width * 0.8, height: 100 }]}
-        placeholder="Details"
-        value={details}
-        onChangeText={setDetails}
-        multiline
-      />
-
-      <View style={[styles.buttonContainer, { width: width * 0.8 }]}>
+    <Pressable
+      style={{ flex: 1 }}
+      onPress={() => Keyboard.dismiss()} // closes keyboard when tapping outside
+      accessible={false} // prevents screen reader focus issues
+    >
+      <ThemedView style={styles.container}>
+        <ThemedText type="subtitle">Create New To-Do</ThemedText>
         <View style={styles.buttonRow}>
           <Pressable
             style={({ pressed }) => [
               styles.button,
               {
                 opacity: pressed ? 0.7 : 1,
-                backgroundColor: isDeepFull ? "#c0bbbbff" : tintColor,
+                backgroundColor: isDeepFull
+                  ? "#c0bbbbff" // full → gray
+                  : category === "deep"
+                  ? "#1b8dffff" // clicked → bright blue
+                  : "#a3ccf6ff", // default → bright
               },
             ]}
-            onPress={() => handleAdd("deep")}
-            disabled={!title.trim()}
+            onPress={() => {
+              if (isDeepFull) {
+                setToastMessage("Please clear Deep task first");
+                setToastVisible(true);
+                return;
+              }
+              setCategory(category === "deep" ? null : "deep");
+            }}
           >
             <IconSymbol size={40} name="brain" color="white" />
             <Text style={styles.buttonText}>Add Deep Task</Text>
+            <Text style={styles.buttonText}>
+              ({deepTasks.length}/{maxTasks.deep})
+            </Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [
               styles.button,
               {
                 opacity: pressed ? 0.7 : 1,
-                backgroundColor: isEasyFull ? "gray" : "#ff8025ff",
+                backgroundColor: isEasyFull
+                  ? "gray" // full → gray
+                  : category === "easy"
+                  ? "#ff8025ff" // clicked → bright orange
+                  : "#f9c9a8ff", // default → orange
               },
             ]}
-            onPress={() => handleAdd("easy")}
-            disabled={!title.trim()}
+            onPress={() => {
+              if (isEasyFull) {
+                setToastMessage("Please clear Easy task first");
+                setToastVisible(true);
+                return;
+              }
+              setCategory(category === "easy" ? null : "easy");
+            }}
           >
             <IconSymbol size={40} name="bolt" color="white" />
             <Text style={styles.buttonText}>Add Easy Task</Text>
+            <Text style={styles.buttonText}>
+              ({easyTasks.length}/{maxTasks.easy})
+            </Text>
           </Pressable>
         </View>
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            { opacity: pressed ? 0.7 : 1, backgroundColor: "gray" },
-          ]}
-          onPress={() => router.back()}
+        <TextInput
+          style={[styles.input, { width: width * 0.9, height: 50 }]}
+          placeholder="Title"
+          value={title}
+          onChangeText={setTitle}
+          editable={!!category}
+          onPress={() => {
+            if (!category) {
+              setToastMessage("Please select Deep or Easy task first");
+              setToastVisible(true);
+              return;
+            }
+          }}
+        />
+
+        <TextInput
+          style={[styles.input, { width: width * 0.9, height: 100 }]}
+          placeholder="Details"
+          value={details}
+          onChangeText={setDetails}
+          multiline
+          editable={!!category}
+          onPress={() => {
+            if (!category) {
+              setToastMessage("Please select Deep or Easy task first");
+              setToastVisible(true);
+              return;
+            }
+          }}
+        />
+
+        <View
+          style={[styles.buttonContainer, { width: width * 0.9, height: 120 }]}
         >
-          <Text style={styles.buttonText}>Cancel</Text>
-        </Pressable>
-      </View>
-      {/* Animated Toast */}
-      <Toast
-        visible={toastVisible}
-        message={toastMessage}
-        onDismiss={() => setToastVisible(false)}
-      />
-    </ThemedView>
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              { opacity: pressed ? 0.7 : 1, backgroundColor: "green" },
+            ]}
+            onPress={() => {
+              if (!category) {
+                setToastMessage("Please select Deep or Easy task first");
+                setToastVisible(true);
+                return;
+              }
+              handleAdd(category);
+            }}
+          >
+            <Text style={styles.buttonText}>Add</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              { opacity: pressed ? 0.7 : 1, backgroundColor: "gray" },
+            ]}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.buttonText}>Cancel</Text>
+          </Pressable>
+        </View>
+
+        {/* Animated Toast */}
+        <Toast
+          visible={toastVisible}
+          message={toastMessage}
+          onDismiss={() => setToastVisible(false)}
+        />
+      </ThemedView>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: "100%",
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
@@ -156,8 +225,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    height: 125,
-    padding: 12,
+    paddingVertical: 15,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
