@@ -24,9 +24,10 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   gearshape: "settings",
   plus: "add",
-  "face.dissatisfied": "sentiment-dissatisfied",
+  "face.smiling.inverse": "sentiment-satisfied",
   brain: "psychology",
   bolt: "bolt",
+  checkmark: "check",
 } as const;
 
 type IconSymbolName = keyof typeof MAPPING;

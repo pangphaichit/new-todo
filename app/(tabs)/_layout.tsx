@@ -110,7 +110,7 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   fab: {
     position: "absolute",
-    bottom: 35,
+    bottom: 25,
     alignSelf: "center",
     width: 70,
     height: 70,

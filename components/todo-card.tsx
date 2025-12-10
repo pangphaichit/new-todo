@@ -1,7 +1,10 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import React from "react";
-import { StyleSheet, View } from "react-native";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 
 interface Todo {
   title: string;
@@ -14,10 +17,28 @@ interface TodoCardProps {
 }
 
 export const TodoCard: React.FC<TodoCardProps> = ({ todo, index }) => {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? "light"].tint;
+  const [checked, setChecked] = useState(false);
+
   return (
     <ThemedView style={[styles.todoCard, { marginTop: index === 0 ? 0 : 16 }]}>
       <View style={styles.todoHeader}>
-        <View style={styles.checkbox} />
+        <TouchableOpacity
+          style={[
+            styles.checkbox,
+            checked && {
+              backgroundColor: tintColor,
+              borderColor: tintColor,
+            },
+            checked && styles.checkedCheckbox,
+          ]}
+          onPress={() => setChecked(!checked)}
+        >
+          {checked && (
+            <IconSymbol name="checkmark" size={16} color="#ffffffff" />
+          )}
+        </TouchableOpacity>
         <ThemedText
           type="defaultSemiBold"
           style={styles.todoTitle}
@@ -35,12 +56,8 @@ export const TodoCard: React.FC<TodoCardProps> = ({ todo, index }) => {
 
 const styles = StyleSheet.create({
   todoCard: {
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: "rgba(161, 206, 220, 0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(161, 206, 220, 0.3)",
-    gap: 12,
+    padding: 5,
+    gap: 5,
   },
   todoHeader: {
     flexDirection: "row",
@@ -53,11 +70,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     borderColor: "#A1CEDC",
-    marginTop: 2,
+    marginTop: 4,
+  },
+  checkedCheckbox: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   todoTitle: {
     flex: 1,
-    fontSize: 18,
+    fontSize: 15,
     lineHeight: 26,
   },
   todoDetails: {

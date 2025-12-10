@@ -37,13 +37,12 @@ export default function HomeScreen() {
         {/* Empty State */}
         {todos.length === 0 ? (
           <ThemedView style={styles.emptyContainer}>
-            <IconSymbol name="face.dissatisfied" size={65} color="gray" />
+            <IconSymbol name="face.smiling.inverse" size={65} color="gray" />
             <ThemedText type="subtitle" style={styles.emptyTitle}>
               No tasks yet
             </ThemedText>
             <ThemedText style={styles.emptyText}>
-              Tap "Add To Do" to create your first task and start being
-              productive!
+              Tap "+" to create your first task and organize your to-do list!
             </ThemedText>
           </ThemedView>
         ) : (
@@ -52,7 +51,7 @@ export default function HomeScreen() {
             {/* Deep Tasks */}
             {deepTasks.length > 0 && (
               <>
-                <ThemedText type="subtitle" style={{ marginBottom: 8 }}>
+                <ThemedText type="subtitle" style={styles.taskType}>
                   Deep Tasks ({deepTasks.length}/{MAX_DEEP})
                 </ThemedText>
                 {deepTasks.map((item, index) => (
@@ -64,10 +63,7 @@ export default function HomeScreen() {
             {/* Easy Tasks */}
             {easyTasks.length > 0 && (
               <>
-                <ThemedText
-                  type="subtitle"
-                  style={{ marginBottom: 8, marginTop: 20 }}
-                >
+                <ThemedText type="subtitle" style={styles.taskType}>
                   Easy Tasks ({easyTasks.length}/{MAX_EASY})
                 </ThemedText>
                 {easyTasks.map((item, index) => (
@@ -131,38 +127,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   listContainer: {
-    gap: 16,
+    gap: 2,
   },
-  todoCard: {
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: "rgba(161, 206, 220, 0.15)",
-    borderWidth: 1,
-    borderColor: "rgba(161, 206, 220, 0.3)",
-    gap: 12,
-  },
-  todoHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: "#A1CEDC",
-    marginTop: 2,
-  },
-  todoTitle: {
-    flex: 1,
-    fontSize: 18,
-    lineHeight: 26,
-  },
-  todoDetails: {
+  taskType: {
     fontSize: 15,
-    lineHeight: 22,
-    opacity: 0.8,
-    marginLeft: 36,
+    marginBottom: 15,
+    marginTop: 10,
   },
 });
