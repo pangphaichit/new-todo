@@ -156,7 +156,7 @@ export default function ModalScreen() {
           <Pressable
             style={({ pressed }) => [
               styles.button,
-              { opacity: pressed ? 0.7 : 1, backgroundColor: "green" },
+              { opacity: pressed ? 0.7 : 1, backgroundColor: tintColor },
             ]}
             onPress={() => {
               if (!category) {
