@@ -28,6 +28,7 @@ const MAPPING = {
   brain: "psychology",
   bolt: "bolt",
   checkmark: "check",
+  trash: "delete",
 } as const;
 
 type IconSymbolName = keyof typeof MAPPING;

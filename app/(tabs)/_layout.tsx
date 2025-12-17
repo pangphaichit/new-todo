@@ -7,6 +7,7 @@ import { useTodoStore } from "@/store/store";
 import { Tabs, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import "react-native-get-random-values";
 
 export default function TabLayout() {
   const router = useRouter();

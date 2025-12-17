@@ -52,3 +52,48 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+// Color utility functions
+export const ColorUtils = {
+  /**
+   * Adjusts the opacity of a color
+   * @param color - Hex color string (e.g., "#2baed9ff" or "#2baed9")
+   * @param opacity - Opacity value between 0 and 1
+   * @returns RGBA color string
+   */
+  adjustOpacity: (color: string, opacity: number): string => {
+    const hex = color.replace("#", "");
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  },
+
+  /**
+   * Lightens a color by adding to RGB values
+   * @param color - Hex color string
+   * @param amount - Amount to lighten (0-255)
+   * @returns RGB color string
+   */
+  lighten: (color: string, amount: number): string => {
+    const hex = color.replace("#", "");
+    const r = Math.min(255, parseInt(hex.substring(0, 2), 16) + amount);
+    const g = Math.min(255, parseInt(hex.substring(2, 4), 16) + amount);
+    const b = Math.min(255, parseInt(hex.substring(4, 6), 16) + amount);
+    return `rgb(${r}, ${g}, ${b})`;
+  },
+
+  /**
+   * Darkens a color by subtracting from RGB values
+   * @param color - Hex color string
+   * @param amount - Amount to darken (0-255)
+   * @returns RGB color string
+   */
+  darken: (color: string, amount: number): string => {
+    const hex = color.replace("#", "");
+    const r = Math.max(0, parseInt(hex.substring(0, 2), 16) - amount);
+    const g = Math.max(0, parseInt(hex.substring(2, 4), 16) - amount);
+    const b = Math.max(0, parseInt(hex.substring(4, 6), 16) - amount);
+    return `rgb(${r}, ${g}, ${b})`;
+  },
+};

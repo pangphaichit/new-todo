@@ -4,10 +4,13 @@ import { TodoCard } from "@/components/todo-card";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useTodoStore } from "@/store/store";
 import { ScrollView, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const todos = useTodoStore((state) => state.todos);
+  const undoneTodos = todos.filter((t) => !t.done);
+  const deleteTodo = useTodoStore((state) => state.deleteTodo);
 
   const deepTasks = todos.filter((t) => t.category === "deep");
   const easyTasks = todos.filter((t) => t.category === "easy");
@@ -16,65 +19,78 @@ export default function HomeScreen() {
   const MAX_EASY = 7;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">willing to do...</ThemedText>
-        </ThemedView>
-
-        {/* Task Counter */}
-        {todos.length > 0 && (
-          <ThemedView style={styles.counterContainer}>
-            <ThemedText type="defaultSemiBold" style={styles.counterText}>
-              only {todos.length} {todos.length === 1 ? "task" : "tasks"} today
-            </ThemedText>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.content}
+        >
+          <ThemedView style={styles.titleContainer}>
+            <ThemedText type="title">willing to do...</ThemedText>
           </ThemedView>
-        )}
 
-        {/* Empty State */}
-        {todos.length === 0 ? (
-          <ThemedView style={styles.emptyContainer}>
-            <IconSymbol name="face.smiling.inverse" size={65} color="gray" />
-            <ThemedText type="subtitle" style={styles.emptyTitle}>
-              No tasks yet
-            </ThemedText>
-            <ThemedText style={styles.emptyText}>
-              Tap "+" to create your first task and organize your to-do list!
-            </ThemedText>
-          </ThemedView>
-        ) : (
-          /* To-Do List */
-          <ThemedView style={styles.listContainer}>
-            {/* Deep Tasks */}
-            {deepTasks.length > 0 && (
-              <>
-                <ThemedText type="subtitle" style={styles.taskType}>
-                  Deep Tasks ({deepTasks.length}/{MAX_DEEP})
-                </ThemedText>
-                {deepTasks.map((item, index) => (
-                  <TodoCard key={index} todo={item} index={index} />
-                ))}
-              </>
-            )}
+          {/* Task Counter */}
+          {todos.length > 0 && (
+            <ThemedView style={styles.counterContainer}>
+              <ThemedText type="defaultSemiBold" style={styles.counterText}>
+                only {undoneTodos.length}{" "}
+                {undoneTodos.length === 1 ? "task" : "tasks"} today
+              </ThemedText>
+            </ThemedView>
+          )}
 
-            {/* Easy Tasks */}
-            {easyTasks.length > 0 && (
-              <>
-                <ThemedText type="subtitle" style={styles.taskType}>
-                  Easy Tasks ({easyTasks.length}/{MAX_EASY})
-                </ThemedText>
-                {easyTasks.map((item, index) => (
-                  <TodoCard key={index} todo={item} index={index} />
-                ))}
-              </>
-            )}
-          </ThemedView>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+          {/* Empty State */}
+          {todos.length === 0 ? (
+            <ThemedView style={styles.emptyContainer}>
+              <IconSymbol name="face.smiling.inverse" size={65} color="gray" />
+              <ThemedText type="subtitle" style={styles.emptyTitle}>
+                No tasks yet
+              </ThemedText>
+              <ThemedText style={styles.emptyText}>
+                Tap "+" to create your first task and organize your to-do list!
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            /* To-Do List */
+            <ThemedView style={styles.listContainer}>
+              {/* Deep Tasks */}
+              {deepTasks.length > 0 && (
+                <>
+                  <ThemedText type="subtitle" style={styles.taskType}>
+                    Deep Tasks ({deepTasks.length}/{MAX_DEEP})
+                  </ThemedText>
+                  {deepTasks.map((item, index) => (
+                    <TodoCard
+                      key={item.id}
+                      todo={item}
+                      index={index}
+                      onDelete={() => deleteTodo(item.id)}
+                    />
+                  ))}
+                </>
+              )}
+
+              {/* Easy Tasks */}
+              {easyTasks.length > 0 && (
+                <>
+                  <ThemedText type="subtitle" style={styles.taskType}>
+                    Easy Tasks ({easyTasks.length}/{MAX_EASY})
+                  </ThemedText>
+                  {easyTasks.map((item, index) => (
+                    <TodoCard
+                      key={item.id}
+                      todo={item}
+                      index={index}
+                      onDelete={() => deleteTodo(item.id)}
+                    />
+                  ))}
+                </>
+              )}
+            </ThemedView>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
