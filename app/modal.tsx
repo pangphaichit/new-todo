@@ -7,6 +7,8 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { Platform } from "react-native";
+
 import {
   Keyboard,
   Pressable,
@@ -38,27 +40,62 @@ export default function ModalScreen() {
   const isDeepFull = deepTasks.length >= maxTasks.deep;
   const isEasyFull = easyTasks.length >= maxTasks.easy;
 
-  const handleAdd = (category: "deep" | "easy") => {
-    const isFull = category === "deep" ? isDeepFull : isEasyFull;
+  const trimmedTitle = title.trim();
+  const isTitleValid = trimmedTitle.length >= 2;
+  const isAddDisabled = !category || !isTitleValid;
 
-    if (isFull) {
-      setToastMessage(
-        `${
-          category === "deep" ? "Deep" : "Easy"
-        } task slots full! Complete some first`
-      );
+  const TITLE_LIMIT = 40;
+  const DETAILS_LIMIT = 120;
+
+  const handleAdd = (selectedCategory: "deep" | "easy" | null) => {
+    if (!selectedCategory) return;
+
+    addTodo({
+      title: title.trim(),
+      details: details.trim(),
+      category: selectedCategory,
+      done: false,
+    });
+
+    setTitle("");
+    setDetails("");
+    setCategory(null);
+    router.back();
+  };
+
+  const requireCategory = () => {
+    if (!category) {
+      setToastMessage("Please select Deep or Easy task first");
       setToastVisible(true);
-      return;
+      Keyboard.dismiss();
+      return false;
     }
 
-    addTodo({ title, details, category });
-    router.back();
+    if (category === "deep" && isDeepFull) {
+      setToastMessage("Please clear Deep tasks first");
+      setToastVisible(true);
+      Keyboard.dismiss();
+      return false;
+    }
+
+    if (category === "easy" && isEasyFull) {
+      setToastMessage("Please clear Easy tasks first");
+      setToastVisible(true);
+      Keyboard.dismiss();
+      return false;
+    }
+
+    return true;
   };
 
   return (
     <Pressable
       style={{ flex: 1 }}
-      onPress={() => Keyboard.dismiss()} // closes keyboard when tapping outside
+      onPress={() => {
+        if (Platform.OS !== "web") {
+          Keyboard.dismiss();
+        }
+      }}
       accessible={false} // prevents screen reader focus issues
     >
       <ThemedView style={styles.container}>
@@ -119,51 +156,60 @@ export default function ModalScreen() {
             </Text>
           </Pressable>
         </View>
-        <TextInput
-          style={[styles.input, { width: width * 0.9, height: 50 }]}
-          placeholder="Title"
-          value={title}
-          onChangeText={setTitle}
-          editable={!!category}
-          onPress={() => {
-            if (!category) {
-              setToastMessage("Please select Deep or Easy task first");
-              setToastVisible(true);
-              return;
-            }
-          }}
-        />
+        <View style={styles.titleInputContainer}>
+          <Text style={styles.titleInputCounter}>
+            {TITLE_LIMIT - title.length} characters left
+          </Text>
+          <TextInput
+            style={[styles.input, { width: width * 0.9, height: 50 }]}
+            placeholder="Title"
+            value={title}
+            maxLength={TITLE_LIMIT}
+            onChangeText={setTitle}
+            editable={!!category}
+            onFocus={() => {
+              requireCategory();
+            }}
+          />
+        </View>
+        <View style={styles.detailsInputContainer}>
+          <Text style={styles.detailsInputCounter}>
+            {DETAILS_LIMIT - details.length} characters left
+          </Text>
 
-        <TextInput
-          style={[styles.input, { width: width * 0.9, height: 100 }]}
-          placeholder="Details"
-          value={details}
-          onChangeText={setDetails}
-          multiline
-          editable={!!category}
-          onPress={() => {
-            if (!category) {
-              setToastMessage("Please select Deep or Easy task first");
-              setToastVisible(true);
-              return;
-            }
-          }}
-        />
-
+          <TextInput
+            style={[styles.input, { width: width * 0.9, height: 100 }]}
+            placeholder="Details"
+            value={details}
+            maxLength={DETAILS_LIMIT}
+            onChangeText={setDetails}
+            multiline
+            editable={!!category}
+            onFocus={() => {
+              requireCategory();
+            }}
+          />
+        </View>
         <View
           style={[styles.buttonContainer, { width: width * 0.9, height: 120 }]}
         >
           <Pressable
             style={({ pressed }) => [
               styles.button,
-              { opacity: pressed ? 0.7 : 1, backgroundColor: tintColor },
+              {
+                opacity: pressed || isAddDisabled ? 0.5 : 1,
+                backgroundColor: isAddDisabled ? "#ccc" : tintColor,
+              },
             ]}
             onPress={() => {
-              if (!category) {
-                setToastMessage("Please select Deep or Easy task first");
+              if (!requireCategory()) return;
+
+              if (title.trim().length === 0) {
+                setToastMessage("Please enter a title");
                 setToastVisible(true);
                 return;
               }
+
               handleAdd(category);
             }}
           >
@@ -209,7 +255,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    padding: 10,
+    padding: 15,
+  },
+  titleInputContainer: { position: "relative" },
+  detailsInputContainer: { position: "relative" },
+
+  titleInputCounter: {
+    position: "absolute",
+    right: 8,
+    top: 2,
+    fontSize: 12,
+    color: "#8d8c8cff",
+  },
+
+  detailsInputCounter: {
+    position: "absolute",
+    right: 8,
+    top: 2,
+    fontSize: 12,
+    color: "#8d8c8cff",
   },
   buttonContainer: {
     marginTop: 10,

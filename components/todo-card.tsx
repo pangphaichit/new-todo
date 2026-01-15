@@ -4,7 +4,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors, ColorUtils } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
-import React from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -26,12 +26,18 @@ interface Todo {
 interface TodoCardProps {
   todo: Todo;
   index: number;
+  isOpen: boolean;
+  onOpen: () => void;
+  onClose: () => void;
   onDelete?: () => void;
 }
 
 export const TodoCard: React.FC<TodoCardProps> = ({
   todo,
   index,
+  isOpen,
+  onOpen,
+  onClose,
   onDelete,
 }) => {
   const colorScheme = useColorScheme();
@@ -42,6 +48,16 @@ export const TodoCard: React.FC<TodoCardProps> = ({
   // Card X position
   const translateX = useSharedValue(0);
   const isDeleteOpen = useSharedValue(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      translateX.value = withSpring(-150);
+      isDeleteOpen.value = true;
+    } else {
+      translateX.value = withSpring(0);
+      isDeleteOpen.value = false;
+    }
+  }, [isOpen]);
 
   const swipeGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -60,6 +76,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       if (event.translationX < -20) {
         translateX.value = withSpring(-150);
         isDeleteOpen.value = true;
+        runOnJS(onOpen)();
         return;
       }
 
@@ -74,6 +91,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       if (isDeleteOpen.value && event.translationX > 0) {
         translateX.value = withSpring(0);
         isDeleteOpen.value = false;
+        runOnJS(onClose)();
         return;
       }
 
@@ -85,10 +103,19 @@ export const TodoCard: React.FC<TodoCardProps> = ({
     transform: [{ translateX: translateX.value }],
   }));
 
+  const composedGesture = swipeGesture;
+
   return (
-    <GestureDetector gesture={swipeGesture}>
+    <View>
+      {isOpen && (
+        <TouchableOpacity
+          style={styles.tapToClose}
+          activeOpacity={1}
+          onPress={onClose}
+        />
+      )}
       <View style={styles.container}>
-        <View style={styles.deleteBackground}>
+        <View style={styles.deleteBackground} pointerEvents="box-none">
           <TouchableOpacity
             onPress={() => {
               onDelete?.();
@@ -98,72 +125,73 @@ export const TodoCard: React.FC<TodoCardProps> = ({
             <IconSymbol name="trash" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
-        <Animated.View style={[styles.todoCard, animatedStyle]}>
-          <ThemedView style={styles.todoCard}>
-            <View style={styles.todoHeader}>
-              <TouchableOpacity
-                style={[
-                  styles.checkbox,
-                  { borderColor: tintColor },
-                  checked && {
-                    backgroundColor: ColorUtils.adjustOpacity(tintColor, 0.5),
-                    borderColor: ColorUtils.adjustOpacity(tintColor, 0.1),
-                  },
-                  checked && styles.checkedCheckbox,
-                ]}
-                onPress={() => toggleTodo(todo.id)}
-              >
-                {checked && (
-                  <IconSymbol name="checkmark" size={16} color="#ffffffff" />
-                )}
-              </TouchableOpacity>
+        <GestureDetector gesture={composedGesture}>
+          <Animated.View style={[styles.todoCard, animatedStyle]}>
+            <ThemedView style={styles.todoCard}>
+              <View style={styles.todoHeader}>
+                <TouchableOpacity
+                  style={[
+                    styles.checkbox,
+                    { borderColor: tintColor },
+                    checked && {
+                      backgroundColor: ColorUtils.adjustOpacity(tintColor, 0.5),
+                      borderColor: ColorUtils.adjustOpacity(tintColor, 0.1),
+                    },
+                    checked && styles.checkedCheckbox,
+                  ]}
+                  onPress={() => toggleTodo(todo.id)}
+                >
+                  {checked && (
+                    <IconSymbol name="checkmark" size={16} color="#ffffffff" />
+                  )}
+                </TouchableOpacity>
+                <ThemedText
+                  type="defaultSemiBold"
+                  style={[
+                    styles.todoTitle,
+                    checked && {
+                      color: "#c6c2c2ff",
+                      textDecorationLine: "line-through",
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {todo.title}
+                </ThemedText>
+              </View>
               <ThemedText
-                type="defaultSemiBold"
                 style={[
-                  styles.todoTitle,
+                  styles.todoDetails,
                   checked && {
-                    color: "#c6c2c2ff",
+                    color: ColorUtils.adjustOpacity(tintColor, 0.5),
                     textDecorationLine: "line-through",
                   },
                 ]}
                 numberOfLines={2}
               >
-                {todo.title}
+                {todo.details}
               </ThemedText>
-            </View>
-            <ThemedText
-              style={[
-                styles.todoDetails,
-                checked && {
-                  color: ColorUtils.adjustOpacity(tintColor, 0.5),
-                  textDecorationLine: "line-through",
-                },
-              ]}
-              numberOfLines={3}
-            >
-              {todo.details}
-            </ThemedText>
-            {checked && (
-              <View style={styles.confettiWrapper}>
-                <ConfettiCannon
-                  count={80}
-                  fadeOut
-                  origin={{ x: 0, y: 0 }}
-                  fallSpeed={2500}
-                />
-              </View>
-            )}
-          </ThemedView>
-        </Animated.View>
+              {checked && (
+                <View style={styles.confettiWrapper} pointerEvents="none">
+                  <ConfettiCannon
+                    count={80}
+                    fadeOut
+                    origin={{ x: 0, y: 0 }}
+                    fallSpeed={2500}
+                  />
+                </View>
+              )}
+            </ThemedView>
+          </Animated.View>
+        </GestureDetector>
       </View>
-    </GestureDetector>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { marginVertical: 8 },
   todoCard: {
-    height: 70,
     position: "relative",
   },
   todoHeader: {
@@ -201,6 +229,11 @@ const styles = StyleSheet.create({
     height: "120%",
     overflow: "visible",
   },
+  tapToClose: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+  },
+
   deleteBackground: {
     position: "absolute",
     right: 0,
