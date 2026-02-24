@@ -4,6 +4,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors, ColorUtils } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
+import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
@@ -40,6 +41,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
   onClose,
   onDelete,
 }) => {
+  const router = useRouter();
   const colorScheme = useColorScheme();
   const tintColor = Colors[colorScheme ?? "light"].tint;
   const toggleTodo = useTodoStore((state) => state.toggleTodo);
@@ -48,6 +50,8 @@ export const TodoCard: React.FC<TodoCardProps> = ({
   // Card X position
   const translateX = useSharedValue(0);
   const isDeleteOpen = useSharedValue(false);
+
+  const isPressingCheckbox = useSharedValue(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -58,6 +62,12 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       isDeleteOpen.value = false;
     }
   }, [isOpen]);
+
+  const handleTapToEdit = () => {
+    if (!isOpen) {
+      router.push(`/modal?screen=create-to-do&id=${todo.id}`);
+    }
+  };
 
   const swipeGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -99,11 +109,19 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       translateX.value = withSpring(isDeleteOpen.value ? -150 : 0);
     });
 
+  const tapGesture = Gesture.Tap()
+    .maxDuration(250)
+    .onEnd(() => {
+      if (!isPressingCheckbox.value && !isOpen) {
+        runOnJS(handleTapToEdit)();
+      }
+    });
+
+  const composedGesture = Gesture.Exclusive(swipeGesture, tapGesture);
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
-
-  const composedGesture = swipeGesture;
 
   return (
     <View>
@@ -139,6 +157,12 @@ export const TodoCard: React.FC<TodoCardProps> = ({
                     },
                     checked && styles.checkedCheckbox,
                   ]}
+                  onPressIn={() => {
+                    isPressingCheckbox.value = true;
+                  }}
+                  onPressOut={() => {
+                    isPressingCheckbox.value = false;
+                  }}
                   onPress={() => toggleTodo(todo.id)}
                 >
                   {checked && (

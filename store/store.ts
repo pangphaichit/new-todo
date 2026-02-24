@@ -12,6 +12,10 @@ interface Todo {
 interface TodoState {
   todos: Todo[];
   addTodo: (todo: Omit<Todo, "id">) => void;
+  updateTodo: (
+    id: string,
+    data: Pick<Todo, "title" | "details" | "category">,
+  ) => void;
   deleteTodo: (id: string) => void;
   toggleTodo: (id: string) => void;
   deepTasks: () => Todo[];
@@ -30,6 +34,10 @@ export const useTodoStore = create<TodoState>((set, get) => ({
         },
       ],
     })),
+  updateTodo: (id, data) =>
+    set((state) => ({
+      todos: state.todos.map((t) => (t.id === id ? { ...t, ...data } : t)),
+    })),
 
   deleteTodo: (id: string) =>
     set((state) => ({
@@ -39,7 +47,7 @@ export const useTodoStore = create<TodoState>((set, get) => ({
   toggleTodo: (id: string) =>
     set((state) => ({
       todos: state.todos.map((t) =>
-        t.id === id ? { ...t, done: !t.done } : t
+        t.id === id ? { ...t, done: !t.done } : t,
       ),
     })),
 

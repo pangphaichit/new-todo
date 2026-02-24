@@ -5,8 +5,8 @@ import Toast from "@/components/ui/toast";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Platform } from "react-native";
 
 import {
@@ -21,15 +21,19 @@ import {
 
 export default function ModalScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const todos = useTodoStore((state) => state.todos);
+  const addTodo = useTodoStore((state) => state.addTodo);
+  const updateTodo = useTodoStore((state) => state.updateTodo);
+  const existingTodo = id ? todos.find((t) => t.id === id) : null;
+  const isEditing = !!existingTodo;
+
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
   const [category, setCategory] = useState<"deep" | "easy" | null>(null);
-  const addTodo = useTodoStore((state) => state.addTodo);
   const { width } = useWindowDimensions();
   const colorScheme = useColorScheme();
   const tintColor = Colors[colorScheme ?? "light"].tint;
-
-  const todos = useTodoStore((state) => state.todos);
 
   const maxTasks = { deep: 3, easy: 7 };
   const deepTasks = todos.filter((t) => t.category === "deep");
@@ -47,19 +51,32 @@ export default function ModalScreen() {
   const TITLE_LIMIT = 40;
   const DETAILS_LIMIT = 120;
 
-  const handleAdd = (selectedCategory: "deep" | "easy" | null) => {
-    if (!selectedCategory) return;
+  useEffect(() => {
+    if (existingTodo) {
+      setTitle(existingTodo.title);
+      setDetails(existingTodo.details);
+      setCategory(existingTodo.category);
+    }
+  }, [existingTodo]);
 
-    addTodo({
-      title: title.trim(),
-      details: details.trim(),
-      category: selectedCategory,
-      done: false,
-    });
+  const handleSave = () => {
+    if (!category) return;
 
-    setTitle("");
-    setDetails("");
-    setCategory(null);
+    if (isEditing) {
+      updateTodo(id!, {
+        title: title.trim(),
+        details: details.trim(),
+        category,
+      });
+    } else {
+      addTodo({
+        title: title.trim(),
+        details: details.trim(),
+        category,
+        done: false,
+      });
+    }
+
     router.back();
   };
 
@@ -99,7 +116,10 @@ export default function ModalScreen() {
       accessible={false} // prevents screen reader focus issues
     >
       <ThemedView style={styles.container}>
-        <ThemedText type="subtitle">Create New To-Do</ThemedText>
+        <ThemedText type="subtitle">
+          {" "}
+          {isEditing ? "Edit To-Do" : "Create New To-Do"}
+        </ThemedText>
         <View style={styles.buttonRow}>
           <Pressable
             style={({ pressed }) => [
@@ -109,8 +129,8 @@ export default function ModalScreen() {
                 backgroundColor: isDeepFull
                   ? "#c0bbbbff" // full → gray
                   : category === "deep"
-                  ? "#1b8dffff" // clicked → bright blue
-                  : "#a3ccf6ff", // default → bright
+                    ? "#1b8dffff" // clicked → bright blue
+                    : "#a3ccf6ff", // default → bright
               },
             ]}
             onPress={() => {
@@ -123,7 +143,7 @@ export default function ModalScreen() {
             }}
           >
             <IconSymbol size={40} name="brain" color="white" />
-            <Text style={styles.buttonText}>Add Deep Task</Text>
+            <Text style={styles.buttonText}>Deep Task</Text>
             <Text style={styles.buttonText}>
               ({deepTasks.length}/{maxTasks.deep})
             </Text>
@@ -136,8 +156,8 @@ export default function ModalScreen() {
                 backgroundColor: isEasyFull
                   ? "gray" // full → gray
                   : category === "easy"
-                  ? "#ff8025ff" // clicked → bright orange
-                  : "#f9c9a8ff", // default → orange
+                    ? "#ff8025ff" // clicked → bright orange
+                    : "#f9c9a8ff", // default → orange
               },
             ]}
             onPress={() => {
@@ -150,7 +170,7 @@ export default function ModalScreen() {
             }}
           >
             <IconSymbol size={40} name="bolt" color="white" />
-            <Text style={styles.buttonText}>Add Easy Task</Text>
+            <Text style={styles.buttonText}>Easy Task</Text>
             <Text style={styles.buttonText}>
               ({easyTasks.length}/{maxTasks.easy})
             </Text>
@@ -166,7 +186,7 @@ export default function ModalScreen() {
             value={title}
             maxLength={TITLE_LIMIT}
             onChangeText={setTitle}
-            editable={!!category}
+            editable={!!category || isEditing}
             onFocus={() => {
               requireCategory();
             }}
@@ -184,7 +204,7 @@ export default function ModalScreen() {
             maxLength={DETAILS_LIMIT}
             onChangeText={setDetails}
             multiline
-            editable={!!category}
+            editable={!!category || isEditing}
             onFocus={() => {
               requireCategory();
             }}
@@ -210,10 +230,10 @@ export default function ModalScreen() {
                 return;
               }
 
-              handleAdd(category);
+              handleSave();
             }}
           >
-            <Text style={styles.buttonText}>Add</Text>
+            <Text style={styles.buttonText}> {isEditing ? "Save" : "Add"}</Text>
           </Pressable>
           <Pressable
             style={({ pressed }) => [
