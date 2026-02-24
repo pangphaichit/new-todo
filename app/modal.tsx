@@ -277,23 +277,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 15,
   },
-  titleInputContainer: { position: "relative" },
+  titleInputContainer: { position: "relative", padding: 5 },
   detailsInputContainer: { position: "relative" },
-
   titleInputCounter: {
     position: "absolute",
     right: 8,
-    top: 2,
+    top: 0,
     fontSize: 12,
-    color: "#8d8c8cff",
+    color: "#b9b7b7ff",
+    padding: 5,
   },
-
   detailsInputCounter: {
     position: "absolute",
     right: 8,
-    top: 2,
+    top: 0,
     fontSize: 12,
-    color: "#8d8c8cff",
+    color: "#b9b7b7ff",
+    padding: 5,
   },
   buttonContainer: {
     marginTop: 10,

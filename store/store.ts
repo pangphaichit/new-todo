@@ -12,7 +12,9 @@ interface Todo {
 }
 
 interface TodoState {
+  userName: string | null;
   todos: Todo[];
+  setUserName: (name: string) => void;
   addTodo: (todo: Omit<Todo, "id">) => void;
   updateTodo: (
     id: string,
@@ -26,7 +28,9 @@ interface TodoState {
 export const useTodoStore = create<TodoState>()(
   persist(
     (set, get) => ({
+      userName: null,
       todos: [],
+      setUserName: (name) => set({ userName: name.trim() }),
       addTodo: (todo) =>
         set((state) => ({
           todos: [

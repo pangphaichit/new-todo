@@ -2,16 +2,21 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { TodoCard } from "@/components/todo-card";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme();
+  const tintColor = Colors[colorScheme ?? "light"].tint;
   const todos = useTodoStore((state) => state.todos);
   const undoneTodos = todos.filter((t) => !t.done);
   const deleteTodo = useTodoStore((state) => state.deleteTodo);
+  const userName = useTodoStore((s) => s.userName);
   const [openCardId, setOpenCardId] = useState<string | null>(null);
 
   const deepTasks = todos.filter((t) => t.category === "deep");
@@ -37,7 +42,13 @@ export default function HomeScreen() {
               }}
             >
               <ThemedView style={styles.titleContainer}>
-                <ThemedText type="title">willing to do...</ThemedText>
+                <ThemedText type="defaultSemiBold">
+                  <Text style={[styles.willingToDoTitle, { color: tintColor }]}>
+                    {" "}
+                    {userName}
+                  </Text>{" "}
+                  willing to do…
+                </ThemedText>
               </ThemedView>
 
               {/* Task Counter */}
@@ -129,6 +140,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  willingToDoTitle: {
+    fontSize: 20,
   },
   content: {
     padding: 20,

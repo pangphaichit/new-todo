@@ -5,12 +5,13 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
 import { Tabs, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import "react-native-get-random-values";
 
 export default function TabLayout() {
   const router = useRouter();
+  const userName = useTodoStore((s) => s.userName);
   const colorScheme = useColorScheme();
   const tintColor = Colors[colorScheme ?? "light"].tint;
 
@@ -24,6 +25,12 @@ export default function TabLayout() {
 
   const canAddMore = deepTasks < maxDeepTasks || easyTasks < maxEasyTasks;
   const [toastVisible, setToastVisible] = useState(false);
+
+  useEffect(() => {
+    if (!userName) {
+      router.replace("/(auth)/set-name");
+    }
+  }, [userName, router]);
 
   const handlePressAdd = () => {
     if (canAddMore) {
