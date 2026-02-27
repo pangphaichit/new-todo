@@ -7,7 +7,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 
 import {
   Keyboard,
@@ -115,144 +115,163 @@ export default function ModalScreen() {
       }}
       accessible={false} // prevents screen reader focus issues
     >
-      <ThemedView style={styles.container}>
-        <ThemedText type="subtitle">
-          {" "}
-          {isEditing ? "Edit To-Do" : "Create New To-Do"}
-        </ThemedText>
-        <View style={styles.buttonRow}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              {
-                opacity: pressed ? 0.7 : 1,
-                backgroundColor: isDeepFull
-                  ? "#c0bbbbff" // full → gray
-                  : category === "deep"
-                    ? "#1b8dffff" // clicked → bright blue
-                    : "#a3ccf6ff", // default → bright
-              },
-            ]}
-            onPress={() => {
-              if (isDeepFull) {
-                setToastMessage("Please clear Deep task first");
-                setToastVisible(true);
-                return;
-              }
-              setCategory(category === "deep" ? null : "deep");
-            }}
-          >
-            <IconSymbol size={40} name="brain" color="white" />
-            <Text style={styles.buttonText}>Deep Task</Text>
-            <Text style={styles.buttonText}>
-              ({deepTasks.length}/{maxTasks.deep})
-            </Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              {
-                opacity: pressed ? 0.7 : 1,
-                backgroundColor: isEasyFull
-                  ? "gray" // full → gray
-                  : category === "easy"
-                    ? "#ff8025ff" // clicked → bright orange
-                    : "#f9c9a8ff", // default → orange
-              },
-            ]}
-            onPress={() => {
-              if (isEasyFull) {
-                setToastMessage("Please clear Easy task first");
-                setToastVisible(true);
-                return;
-              }
-              setCategory(category === "easy" ? null : "easy");
-            }}
-          >
-            <IconSymbol size={40} name="bolt" color="white" />
-            <Text style={styles.buttonText}>Easy Task</Text>
-            <Text style={styles.buttonText}>
-              ({easyTasks.length}/{maxTasks.easy})
-            </Text>
-          </Pressable>
-        </View>
-        <View style={styles.titleInputContainer}>
-          <Text style={styles.titleInputCounter}>
-            {TITLE_LIMIT - title.length} characters left
-          </Text>
-          <TextInput
-            style={[styles.input, { width: width * 0.9, height: 50 }]}
-            placeholder="Title"
-            value={title}
-            maxLength={TITLE_LIMIT}
-            onChangeText={setTitle}
-            editable={!!category || isEditing}
-            onFocus={() => {
-              requireCategory();
-            }}
-          />
-        </View>
-        <View style={styles.detailsInputContainer}>
-          <Text style={styles.detailsInputCounter}>
-            {DETAILS_LIMIT - details.length} characters left
-          </Text>
-
-          <TextInput
-            style={[styles.input, { width: width * 0.9, height: 100 }]}
-            placeholder="Details"
-            value={details}
-            maxLength={DETAILS_LIMIT}
-            onChangeText={setDetails}
-            multiline
-            editable={!!category || isEditing}
-            onFocus={() => {
-              requireCategory();
-            }}
-          />
-        </View>
-        <View
-          style={[styles.buttonContainer, { width: width * 0.9, height: 120 }]}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              {
-                opacity: pressed || isAddDisabled ? 0.5 : 1,
-                backgroundColor: isAddDisabled ? "#ccc" : tintColor,
-              },
-            ]}
-            onPress={() => {
-              if (!requireCategory()) return;
+          <ThemedView style={styles.container}>
+            <ThemedText type="subtitle">
+              {" "}
+              {isEditing ? "Edit To-Do" : "Create New To-Do"}
+            </ThemedText>
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  {
+                    opacity: pressed ? 0.7 : 1,
+                    backgroundColor: isDeepFull
+                      ? "#c0bbbbff" // full → gray
+                      : category === "deep"
+                        ? "#1b8dffff" // clicked → bright blue
+                        : "#a3ccf6ff", // default → bright
+                  },
+                ]}
+                onPress={() => {
+                  if (isDeepFull) {
+                    setToastMessage("Please clear Deep task first");
+                    setToastVisible(true);
+                    return;
+                  }
+                  setCategory(category === "deep" ? null : "deep");
+                }}
+              >
+                <IconSymbol size={40} name="brain" color="white" />
+                <Text style={styles.buttonText}>Deep Task</Text>
+                <Text style={styles.buttonText}>
+                  ({deepTasks.length}/{maxTasks.deep})
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  {
+                    opacity: pressed ? 0.7 : 1,
+                    backgroundColor: isEasyFull
+                      ? "gray" // full → gray
+                      : category === "easy"
+                        ? "#ff8025ff" // clicked → bright orange
+                        : "#f9c9a8ff", // default → orange
+                  },
+                ]}
+                onPress={() => {
+                  if (isEasyFull) {
+                    setToastMessage("Please clear Easy task first");
+                    setToastVisible(true);
+                    return;
+                  }
+                  setCategory(category === "easy" ? null : "easy");
+                }}
+              >
+                <IconSymbol size={40} name="bolt" color="white" />
+                <Text style={styles.buttonText}>Easy Task</Text>
+                <Text style={styles.buttonText}>
+                  ({easyTasks.length}/{maxTasks.easy})
+                </Text>
+              </Pressable>
+            </View>
+            <View style={styles.titleInputContainer}>
+              <Text style={styles.titleInputCounter}>
+                {TITLE_LIMIT - title.length} characters left
+              </Text>
+              <TextInput
+                style={[styles.input, { width: width * 0.9, height: 85 }]}
+                placeholder="Title"
+                value={title}
+                multiline
+                maxLength={TITLE_LIMIT}
+                onChangeText={setTitle}
+                editable={!!category || isEditing}
+                onFocus={() => {
+                  requireCategory();
+                }}
+              />
+            </View>
+            <View style={styles.detailsInputContainer}>
+              <Text style={styles.detailsInputCounter}>
+                {DETAILS_LIMIT - details.length} characters left
+              </Text>
 
-              if (title.trim().length === 0) {
-                setToastMessage("Please enter a title");
-                setToastVisible(true);
-                return;
-              }
+              <TextInput
+                style={[styles.input, { width: width * 0.9, height: 110 }]}
+                placeholder="Details"
+                value={details}
+                maxLength={DETAILS_LIMIT}
+                onChangeText={setDetails}
+                multiline
+                editable={!!category || isEditing}
+                onFocus={() => {
+                  requireCategory();
+                }}
+              />
+            </View>
+            <View
+              style={[
+                styles.buttonContainer,
+                { width: width * 0.9, height: 130 },
+              ]}
+            >
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  {
+                    opacity: pressed || isAddDisabled ? 0.5 : 1,
+                    backgroundColor: isAddDisabled ? "#ccc" : tintColor,
+                  },
+                ]}
+                onPress={() => {
+                  if (!requireCategory()) return;
 
-              handleSave();
-            }}
-          >
-            <Text style={styles.buttonText}> {isEditing ? "Save" : "Add"}</Text>
-          </Pressable>
-          <Pressable
-            style={({ pressed }) => [
-              styles.button,
-              { opacity: pressed ? 0.7 : 1, backgroundColor: "gray" },
-            ]}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </Pressable>
-        </View>
+                  if (title.trim().length === 0) {
+                    setToastMessage("Please enter a title");
+                    setToastVisible(true);
+                    return;
+                  }
 
-        {/* Animated Toast */}
-        <Toast
-          visible={toastVisible}
-          message={toastMessage}
-          onDismiss={() => setToastVisible(false)}
-        />
-      </ThemedView>
+                  handleSave();
+                }}
+              >
+                <Text style={styles.buttonText}>
+                  {" "}
+                  {isEditing ? "Save" : "Add"}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.button,
+                  { opacity: pressed ? 0.7 : 1, backgroundColor: "gray" },
+                ]}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </Pressable>
+            </View>
+
+            {/* Animated Toast */}
+            <Toast
+              visible={toastVisible}
+              message={toastMessage}
+              onDismiss={() => setToastVisible(false)}
+            />
+          </ThemedView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Pressable>
   );
 }
@@ -267,6 +286,10 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     gap: 10,
   },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
   link: {
     marginTop: 15,
     paddingVertical: 15,
@@ -275,9 +298,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
-    padding: 15,
+    paddingLeft: 10,
+    paddingTop: 25,
+    paddingBottom: 25,
+    paddingRight: 10,
+    fontSize: 15,
   },
-  titleInputContainer: { position: "relative", padding: 5 },
+  titleInputContainer: { position: "relative" },
   detailsInputContainer: { position: "relative" },
   titleInputCounter: {
     position: "absolute",
