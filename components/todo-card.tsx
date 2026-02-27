@@ -53,6 +53,8 @@ export const TodoCard: React.FC<TodoCardProps> = ({
 
   const isPressingCheckbox = useSharedValue(false);
 
+  const hasDetails = !!todo.details?.trim();
+
   useEffect(() => {
     if (isOpen) {
       translateX.value = withSpring(-150);
@@ -124,6 +126,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
   }));
 
   const confirmDelete = () => {
+    onClose();
     Alert.alert(
       "Delete task?",
       "This action cannot be undone.",
@@ -207,14 +210,15 @@ export const TodoCard: React.FC<TodoCardProps> = ({
               <ThemedText
                 style={[
                   styles.todoDetails,
+                  !hasDetails && styles.placeholderDetails,
                   checked && {
-                    color: ColorUtils.adjustOpacity(tintColor, 0.5),
+                    color: "#c6c2c2ff",
                     textDecorationLine: "line-through",
                   },
                 ]}
                 numberOfLines={2}
               >
-                {todo.details}
+                {hasDetails ? todo.details : "Tap to add details"}
               </ThemedText>
               {checked && (
                 <View style={styles.confettiWrapper} pointerEvents="none">
@@ -266,6 +270,12 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     opacity: 0.8,
     marginLeft: 36,
+  },
+  placeholderDetails: {
+    color: "#9E9E9E",
+    fontStyle: "italic",
+    opacity: 0.8,
+    fontSize: 14,
   },
   confettiWrapper: {
     position: "absolute",

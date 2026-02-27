@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   taskType: {
-    fontSize: 18,
+    fontSize: 15,
     marginBottom: 15,
     marginTop: 10,
   },
