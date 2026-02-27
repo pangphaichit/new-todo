@@ -53,6 +53,9 @@ export const TodoCard: React.FC<TodoCardProps> = ({
 
   const isPressingCheckbox = useSharedValue(false);
 
+  const trimmedTitle =
+    todo.title?.trim().slice(0, 15) + (todo.title.length > 15 ? "…" : "");
+
   const hasDetails = !!todo.details?.trim();
 
   useEffect(() => {
@@ -129,7 +132,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
     onClose();
     Alert.alert(
       "Delete task?",
-      "This action cannot be undone.",
+      `Are you sure you want to delete \n\n"${trimmedTitle}"?\n\nThis action cannot be undone.`,
       [
         {
           text: "Cancel",
