@@ -6,7 +6,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -123,6 +123,32 @@ export const TodoCard: React.FC<TodoCardProps> = ({
     transform: [{ translateX: translateX.value }],
   }));
 
+  const confirmDelete = () => {
+    Alert.alert(
+      "Delete task?",
+      "This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+          onPress: () => {
+            // optional: close swipe
+            onClose();
+          },
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            onDelete?.();
+            onClose();
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
   return (
     <View>
       {isOpen && (
@@ -134,12 +160,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       )}
       <View style={styles.container}>
         <View style={styles.deleteBackground} pointerEvents="box-none">
-          <TouchableOpacity
-            onPress={() => {
-              onDelete?.();
-            }}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity onPress={confirmDelete} activeOpacity={0.7}>
             <IconSymbol name="trash" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
