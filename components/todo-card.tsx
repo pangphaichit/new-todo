@@ -83,7 +83,7 @@ export const TodoCard: React.FC<TodoCardProps> = ({
       "worklet";
 
       // DELETE (right → left)
-      if (event.translationX < -20) {
+      if (event.translationX < -50) {
         translateX.value = withSpring(-150);
         isDeleteOpen.value = true;
         runOnJS(onOpen)();
@@ -217,6 +217,7 @@ const styles = StyleSheet.create({
   container: { marginVertical: 8 },
   todoCard: {
     position: "relative",
+    backgroundColor: "#F5F5F5",
   },
   todoHeader: {
     flexDirection: "row",
@@ -257,7 +258,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     zIndex: 0,
   },
-
   deleteBackground: {
     position: "absolute",
     right: 0,

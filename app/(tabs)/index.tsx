@@ -6,7 +6,7 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useTodoStore } from "@/store/store";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -55,7 +55,10 @@ export default function HomeScreen() {
               {todos.length > 0 && (
                 <ThemedView style={styles.counterContainer}>
                   <ThemedText type="defaultSemiBold" style={styles.counterText}>
-                    only {undoneTodos.length}{" "}
+                    only{" "}
+                    <ThemedText style={{ color: tintColor }}>
+                      {undoneTodos.length}
+                    </ThemedText>{" "}
                     {undoneTodos.length === 1 ? "task" : "tasks"} today
                   </ThemedText>
                 </ThemedView>
@@ -87,10 +90,18 @@ export default function HomeScreen() {
                 >
                   {/* Deep Tasks */}
                   {deepTasks.length > 0 && (
-                    <>
-                      <ThemedText type="subtitle" style={styles.taskType}>
-                        Deep Tasks ({deepTasks.length}/{MAX_DEEP})
-                      </ThemedText>
+                    <View style={styles.taskWrapper}>
+                      <View style={styles.taskHeader}>
+                        <IconSymbol
+                          name="brain"
+                          size={60}
+                          color="#1b8dffff"
+                          style={styles.headerImage}
+                        />
+                        <ThemedText type="subtitle" style={styles.taskType}>
+                          Deep Tasks ({deepTasks.length}/{MAX_DEEP})
+                        </ThemedText>
+                      </View>
                       {deepTasks.map((item, index) => (
                         <TodoCard
                           key={item.id}
@@ -102,15 +113,23 @@ export default function HomeScreen() {
                           onDelete={() => deleteTodo(item.id)}
                         />
                       ))}
-                    </>
+                    </View>
                   )}
 
                   {/* Easy Tasks */}
                   {easyTasks.length > 0 && (
-                    <>
-                      <ThemedText type="subtitle" style={styles.taskType}>
-                        Easy Tasks ({easyTasks.length}/{MAX_EASY})
-                      </ThemedText>
+                    <View style={styles.taskWrapper}>
+                      <View style={styles.taskHeader}>
+                        <IconSymbol
+                          name="bolt"
+                          size={60}
+                          color="#ff8025ff"
+                          style={styles.headerImage}
+                        />
+                        <ThemedText type="subtitle" style={styles.taskType}>
+                          Easy Tasks ({easyTasks.length}/{MAX_EASY})
+                        </ThemedText>
+                      </View>
                       {easyTasks.map((item, index) => (
                         <TodoCard
                           key={item.id}
@@ -122,7 +141,7 @@ export default function HomeScreen() {
                           onDelete={() => deleteTodo(item.id)}
                         />
                       ))}
-                    </>
+                    </View>
                   )}
                 </Pressable>
               )}
@@ -142,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   willingToDoTitle: {
-    fontSize: 20,
+    fontSize: 22,
   },
   content: {
     padding: 20,
@@ -158,12 +177,12 @@ const styles = StyleSheet.create({
   counterContainer: {
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: "rgba(161, 206, 220, 0.2)",
+    backgroundColor: "#F5F5F5",
     borderRadius: 12,
     marginBottom: 24,
   },
   counterText: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
   },
   emptyContainer: {
@@ -189,8 +208,34 @@ const styles = StyleSheet.create({
     gap: 2,
     flex: 1,
   },
+  taskWrapper: {
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 20,
+    backgroundColor: "#F5F5F5",
+    // iOS shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+
+    // Android shadow
+    elevation: 5,
+  },
+  taskHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 12,
+  },
+  headerImage: {
+    color: "#808080",
+    top: 0,
+    right: 0,
+    position: "absolute",
+  },
   taskType: {
-    fontSize: 15,
+    fontSize: 18,
     marginBottom: 15,
     marginTop: 10,
   },
